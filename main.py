@@ -118,9 +118,12 @@ async def lifespan(app: FastAPI):
     
     # Graceful shutdown routines
     logger.info("Server stopping: Removing Telegram webhook and shutting down bot...")
-    await ptb_app.bot.delete_webhook()
-    await ptb_app.shutdown()
-    await ptb_app.uninitialize()
+    try:
+        await ptb_app.bot.delete_webhook()
+        await ptb_app.shutdown()
+        # FIXED: Removed the non-existent ptb_app.uninitialize() call completely!
+    except Exception as shutdown_error:
+        logger.error(f"Error during graceful shutdown sequence: {shutdown_error}")
 
 
 # Initialize FastAPI app bound to our async lifespan manager
