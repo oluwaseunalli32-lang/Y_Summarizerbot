@@ -9,7 +9,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
 # =====================================================================
-# 1. LOGGING & ENVIRONMENT CONFIGISTRATION
+# 1. LOGGING & ENVIRONMENT CONFIGURATION
 # =====================================================================
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -30,52 +30,52 @@ WEBHOOK_URL = f"{BASE_URL.rstrip('/')}/telegram"
 
 
 # =====================================================================
-# 2. BOT CORE LOGIC / HANDLERS
+# 2. BOT CORE LOGIC / HANDLERS (USING HTML TO PREVENT PARSING ERRORS)
 # =====================================================================
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handles the /start command with a clean Markdown welcome message."""
+    """Handles the /start command with safe HTML formatting."""
     welcome_text = (
-        "🤖 **Welcome to Y_Summarizerbot!**\n\n"
+        "🤖 <b>Welcome to Y_Summarizerbot!</b>\n\n"
         "I am your personal AI-powered reading assistant. Send or forward any long "
         "text wall or article here, and I will condense it into sharp, readable bullet points!\n\n"
-        "📥 *Just paste your text below to get started.*"
+        "📥 <i>Just paste your text below to get started.</i>"
     )
     if update.effective_message:
-        await update.effective_message.reply_text(text=welcome_text, parse_mode="Markdown")
+        await update.effective_message.reply_text(text=welcome_text, parse_mode="HTML")
 
 
 async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Catches text, replies with a placeholder, simulates a task, and edits the message."""
+    """Catches text, replies safely with HTML, and edits without crashing."""
     if not update.effective_message or not update.effective_message.text:
         return
 
-    # 1. Send immediate placeholder response to keep UX snappy
+    # 1. Send immediate placeholder response using HTML tags to keep UX snappy
     placeholder_msg = await update.effective_message.reply_text(
-        text="⚡ *Processing your text... Please wait.*", parse_mode="Markdown"
+        text="⚡ <b>Processing your text... Please wait.</b>", parse_mode="HTML"
     )
 
     user_text = update.effective_message.text
 
     try:
-        # 2. Simulate heavy lifting/Async LLM Summarization call (e.g., 3 seconds)
+        # 2. Simulate background delay / summarization engine processing
         await asyncio.sleep(3) 
         
-        # --- PLACEHOLDER DUMMY LOGIC (Replace this with your real summary engine) ---
         words_count = len(user_text.split())
+        
+        # 3. Use HTML tags here instead of Markdown characters to isolate special characters
         summary_result = (
-            f"📝 **Summary of your {words_count}-word text:**\n\n"
-            f"• **Core Theme:** User shared custom text insights.\n"
-            f"• **Key Takeaway:** This is a simulated summarization result.\n"
-            f"• **Actionable Item:** Integration with an LLM layer can happen here seamlessly."
+            f"📝 <b>Summary of your {words_count}-word text:</b>\n\n"
+            f"• <b>Core Theme:</b> User shared custom text insights.\n"
+            f"• <b>Key Takeaway:</b> This is a simulated summarization result.\n"
+            f"• <b>Actionable Item:</b> Integration with an LLM layer can happen here seamlessly."
         )
-        # ---------------------------------------------------------------------------
 
-        # 3. Edit the placeholder message with the final summary
+        # 4. Edit the placeholder message safely using HTML
         await context.bot.edit_message_text(
             chat_id=placeholder_msg.chat_id,
             message_id=placeholder_msg.message_id,
             text=summary_result,
-            parse_mode="Markdown"
+            parse_mode="HTML"
         )
 
     except Exception as e:
@@ -83,8 +83,8 @@ async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         await context.bot.edit_message_text(
             chat_id=placeholder_msg.chat_id,
             message_id=placeholder_msg.message_id,
-            text="❌ *Sorry, an error occurred while processing your summary.*",
-            parse_mode="Markdown"
+            text="❌ <i>Sorry, an error occurred while processing your summary.</i>",
+            parse_mode="HTML"
         )
 
 
